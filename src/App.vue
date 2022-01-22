@@ -1,8 +1,14 @@
 <template>
-<trading-vue :data="chart" :width="this.width" :height="this.height"
+<trading-vue
+        :data="chart"
+        :width="this.width"
+        :height="this.height"
+        :toolbar="true"
+        :overlays="overlays"
         :color-back="colors.colorBack"
         :color-grid="colors.colorGrid"
-        :color-text="colors.colorText">
+        :color-text="colors.colorText"
+>
 </trading-vue>
 </template>
 
@@ -10,6 +16,7 @@
 import TradingVue from './TradingVue.vue'
 import Data from '../data/data.json'
 import DataCube from '../src/helpers/datacube.js'
+// import Grin from './Grin.js'
 
 export default {
     name: 'app',
@@ -30,6 +37,16 @@ export default {
         window.removeEventListener('resize', this.onResize)
     },
     data() {
+        // return {
+        //     chart: Data,
+        //     width: window.innerWidth,
+        //     height: window.innerHeight,
+        //     colors: {
+        //         colorBack: '#fff',
+        //         colorGrid: '#eee',
+        //         colorText: '#333',
+        //     }
+        // }
         return {
             chart: new DataCube(Data),
             width: window.innerWidth,
@@ -38,7 +55,8 @@ export default {
                 colorBack: '#fff',
                 colorGrid: '#eee',
                 colorText: '#333',
-            }
+            },
+            // overlays: [Grin]
         };
     }
 };

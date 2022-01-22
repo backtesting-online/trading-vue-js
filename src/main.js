@@ -1,8 +1,8 @@
 import Vue from 'vue'
 import App from './App.vue'
 
-// MOB_DEBUG=true npm run test - Enables mobile debugging
-// (sending console output to the webpack terminal)
+//MOB_DEBUG=true npm run test -启用移动调试
+//（将控制台输出发送到 webpack 终端）
 if (MOB_DEBUG) {
     console.log = debug
     console.error = debug

@@ -1,6 +1,6 @@
 
-// Main DataHelper class. A container for data,
-// which works as a proxy and CRUD interface
+//主 DataHelper 类。一个数据容器，
+//作为代理和 CRUD 接口工作
 
 import Utils from '../stuff/utils.js'
 import DCCore from './dc_core.js'
