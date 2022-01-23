@@ -20,12 +20,15 @@ const primitives = {
     Candle, Volbar, Line, Pin, Price, Ray, Seg
 }
 
+// 给 TradingVue 插件注册 install 方法
 TradingVue.install = function (Vue) {
     Vue.component(TradingVue.name, TradingVue)
 }
 
 if (typeof window !== 'undefined' && window.Vue) {
+    // 安装 TradingVue 插件
     window.Vue.use(TradingVue)
+    // 导出组件到全局对象上
     window.TradingVueLib = {
         TradingVue, Overlay, Utils, Constants,
         Candle, Volbar, layout_cnv, layout_vol,

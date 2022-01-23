@@ -5,10 +5,11 @@
         :height="this.height"
         :toolbar="true"
         :legend-buttons="['display', 'settings', 'add', 'remove', 'up', 'down']"
-        :overlays="overlays"
         :color-back="colors.colorBack"
         :color-grid="colors.colorGrid"
         :color-text="colors.colorText"
+        title-txt="test-title"
+        :index-based="true"
 >
 </trading-vue>
 </template>

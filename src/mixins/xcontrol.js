@@ -2,11 +2,14 @@
 
 export default {
     mounted() {
+        // 控件列表
         this.ctrllist()
+        // 皮肤样式
         this.skin_styles()
     },
     methods: {
         // Build / rebuild component list
+        // 构建/重建组件列表
         ctrllist() {
             this.ctrl_destroy()
             this.controllers = []

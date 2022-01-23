@@ -49,24 +49,30 @@ export default {
     components: {
         Chart, Toolbar, Widgets, TheTip
     },
+    // 扩展程序
     mixins: [ XControl ],
     props: {
+        // 主图左上角标题
         titleTxt: {
             type: String,
             default: 'TradingVue.js'
         },
+        // 最外层元素 ID 值
         id: {
             type: String,
             default: 'trading-vue-js'
         },
+        // 最外层的宽度
         width: {
             type: Number,
             default: 800
         },
+        // 最外层高度
         height: {
             type: Number,
             default: 421
         },
+        // 下面都是颜色值, 有用到，但是还没找到在哪里使用了😂
         colorTitle: {
             type: String,
             default: '#42b883'
@@ -137,48 +143,59 @@ export default {
         colors: {
             type: Object
         },
+        // 字体样式
         font: {
             type: String,
             default: Const.ChartConfig.FONT
         },
+        // 是否开启工具栏
         toolbar: {
             type: Boolean,
             default: false
         },
+        // 图表数据
         data: {
             type: Object,
             required: true
         },
-        // Your overlay classes here
+        // overlays 类
         overlays: {
             type: Array,
             default: function () { return [] }
         },
         // Overwrites ChartConfig values,
         // see constants.js
+        // 覆盖 ChartConfig 值，
+        // 查看常量.js
         chartConfig: {
             type: Object,
             default: function () { return {} }
         },
+        // 指标名称旁边的按钮列表，库中有些自定义的内容
         legendButtons: {
             type: Array,
             default: function () { return [] }
         },
+        // 有两种索引，默认是时间索引，可以设置为蜡烛图索引
         indexBased: {
             type: Boolean,
             default: false
         },
+        // 扩展
         extensions: {
             type: Array,
             default: function () { return [] }
         },
+        // 看是在 xcontrol.js 中会用到的一个配置
         xSettings: {
             type: Object,
             default: function () { return {} }
         },
+        // 皮肤名称
         skin: {
             type: String // Skin Name
         },
+        // 从 UTC 偏移的小时量
         timezone: {
             type: Number,
             default: 0
@@ -186,38 +203,55 @@ export default {
     },
     computed: {
         // Copy a subset of TradingVue props
+        // 复制一部分 TradingVue 的 props
         chart_props() {
+            // toolbar 所占用的宽度，图表宽度要减去这个宽度
             let offset = this.$props.toolbar ?
                 this.chart_config.TOOLBAR : 0
+
             let chart_props = {
                 title_txt: this.$props.titleTxt,
+                // 把 extensions 的 overlays 的东西也放进去了
                 overlays: this.$props.overlays.concat(this.mod_ovs),
+                // 真正的 data 数据
                 data: this.decubed,
+                // 最外层宽度
                 width: this.$props.width - offset,
+                // 最外层高度
                 height: this.$props.height,
+                // 字体
                 font: this.font_comp,
+                // 指标名称旁边的按钮列表
                 buttons: this.$props.legendButtons,
+                //  是否开启工具栏
                 toolbar: this.$props.toolbar,
+                // 蜡烛图索引方式
                 ib: this.$props.indexBased || this.index_based || false,
+                // 颜色 Maps
                 colors: Object.assign({}, this.$props.colors ||
                     this.colorpack),
+                // 皮肤原型
                 skin: this.skin_proto,
+                // 从 UTC 偏移的小时量
                 timezone: this.$props.timezone
             }
 
             this.parse_colors(chart_props.colors)
             return chart_props
         },
+
         chart_config() {
             return Object.assign({},
                 Const.ChartConfig,
                 this.$props.chartConfig,
             )
         },
+        // 去除 datacube ，返回真正的数据
         decubed() {
             let data = this.$props.data
+            // 发现传递的数据是经过 dataCube 处理过的
+            // 初始化下，然后返回真正的数据
             if (data.data !== undefined) {
-                // DataCube detected
                 data.init_tvjs(this)
                 return data.data
             } else {
@@ -241,6 +275,7 @@ export default {
             }
             return arr
         },
+        // 字体
         font_comp() {
             return this.skin_proto && this.skin_proto.font ?
                 this.skin_proto.font : this.font
@@ -344,8 +379,10 @@ export default {
                 dc.range_changed(r, tf)
             }
         },
+        // 解析 props 中的 color 属性，并将对应的 color 复制到参数 colors 中
         parse_colors(colors) {
             for (var k in this.$props) {
+                console.log("key: ",  k);
                 if (k.indexOf('color') === 0 && k !== 'colors') {
                     let k2 = k.replace('color', '')
                     k2 = k2[0].toLowerCase() + k2.slice(1)
