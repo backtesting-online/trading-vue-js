@@ -6,14 +6,11 @@ import Icons from '../stuff/icons.json'
 import WebWork from './script_ww_api.js'
 import Dataset from './dataset.js'
 
-
 export default class DCEvents {
-
     constructor() {
-
         this.ww = new WebWork(this)
 
-        // Listen to the web-worker events
+        // 暂时用不到
         this.ww.onevent = e => {
             for (var ctrl of this.tv.controllers) {
                 if (ctrl.ww) ctrl.ww(e.data)
@@ -54,6 +51,7 @@ export default class DCEvents {
     }
 
     // Called when overalay/tv emits 'custom-event'
+    // 当 overalay/tv 发出 'custom-event' 时调用
     on_custom_event(event, args) {
         switch(event) {
             case 'register-tools': this.register_tools(args)
@@ -99,9 +97,14 @@ export default class DCEvents {
     // Triggered when one or multiple settings are changed
     // We select only the changed ones & re-exec them on the
     // web worker
+    //当一个或多个设置改变时触发
+    //我们只选择改变的那些并在 web worker 重新执行他们
+    // TODO:
     on_settings(values, prev) {
-
         if (!this.sett.scripts) return
+
+        // console.log("values: ", values);
+        // console.log("prev: ", prev);
 
         let delta = {}
         let changed = false
@@ -132,8 +135,8 @@ export default class DCEvents {
     }
 
     // When the set of $uuids is changed
+    // 当 $uuids 的集合改变时
     on_ids_changed(values, prev) {
-
         let rem = prev.filter(
             x => x !== undefined && !values.includes(x))
 
@@ -143,6 +146,7 @@ export default class DCEvents {
     }
 
     // Combine all tools and their mods
+    // 结合所有工具及其模组
     register_tools(tools) {
         let preset = {}
         for (var tool of this.data.tools || []) {

@@ -1,4 +1,6 @@
 
+// 为啥要用到 webWorker, 感觉应该不需要才对
+// 看 demo 这里也没有啥有用的通信
 // Webworker interface
 
 // Compiled webworker (see webpack/ww_plugin.js)

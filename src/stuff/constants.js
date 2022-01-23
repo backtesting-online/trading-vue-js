@@ -1,3 +1,4 @@
+// 常量声明文件
 
 const SECOND = 1000
 const MINUTE = SECOND * 60

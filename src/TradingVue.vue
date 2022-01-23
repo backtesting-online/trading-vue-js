@@ -1,3 +1,4 @@
+// 01.23 大致浏览了代码，添加了注释
 
 <template>
     <!-- Main component  -->

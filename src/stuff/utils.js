@@ -3,7 +3,6 @@ import IndexedArray from 'arrayslicer'
 import Const from './constants.js'
 
 export default {
-
     clamp(num, min, max) {
         return num <= min ? min : num >= max ? max : num
     },

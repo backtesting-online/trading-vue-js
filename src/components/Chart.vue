@@ -52,8 +52,9 @@ export default {
         Keyboard
     },
     created() {
-
         // Context for text measurements
+        // 文本测量的上下文
+        // TODO: 和文本有什么关系, 需要什么参数就传啥，没必要全部透传
         this.ctx = new Context(this.$props)
 
         // Initial layout (All measurments for the chart)
@@ -99,6 +100,7 @@ export default {
             this.cursor.locked = state
             if (this._hook_xlocked) this.ce('?x-locked', state)
         },
+        // 计算时间间隔
         calc_interval() {
             let tf = Utils.parse_tf(this.forced_tf)
             if (this.ohlcv.length < 2 && !tf) return
@@ -199,6 +201,7 @@ export default {
             return i === 0 ?
                 this.main_section : this.sub_section
         },
+        // 初始化范围
         init_range() {
             this.calc_interval()
             this.default_range()
