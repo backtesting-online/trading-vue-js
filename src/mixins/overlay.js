@@ -1,5 +1,6 @@
 
 // Usuful stuff for creating overlays. Include as mixin
+// 用于创建叠加层的有用的东西。包含为 mixin
 
 import Mouse from '../stuff/mouse.js'
 

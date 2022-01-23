@@ -1,5 +1,7 @@
 
 // DataCube event handlers
+// DataCube 事件处理程序
+// 01.23 大致看完处理逻辑
 
 import Utils from '../stuff/utils.js'
 import Icons from '../stuff/icons.json'
@@ -103,9 +105,6 @@ export default class DCEvents {
     on_settings(values, prev) {
         if (!this.sett.scripts) return
 
-        // console.log("values: ", values);
-        // console.log("prev: ", prev);
-
         let delta = {}
         let changed = false
 
@@ -178,6 +177,7 @@ export default class DCEvents {
         this.tv.$set(this.data, 'tool', 'Cursor')
     }
 
+    // 执行脚本，似乎和 ww 有关
     exec_script(args) {
         if (args.length && this.sett.scripts) {
             let obj = this.get_overlay(args[0])
@@ -229,6 +229,7 @@ export default class DCEvents {
         }
     }
 
+    // 和 ww 相关，执行所有脚本
     exec_all_scripts() {
         if (!this.sett.scripts) return
         this.set_loading(true)
@@ -238,6 +239,7 @@ export default class DCEvents {
         this.ww.just('exec-all-scripts', { tf, range })
     }
 
+    // 和 ww 相关，执行脚本
     scripts_onrange(r) {
         if (!this.sett.scripts) return
         let delta = {}
@@ -263,6 +265,7 @@ export default class DCEvents {
     }
 
     // Overlay modification from WW
+    //来自 WW 的叠加修改
     modify_overlay(upd) {
         let obj = this.get_overlay(upd)
         if (obj) {
@@ -276,6 +279,7 @@ export default class DCEvents {
         }
     }
 
+    // ww 相关，数据变化
     data_changed(args) {
         if (!this.sett.scripts) return
         if (this.sett.data_change_exec === false) return
@@ -288,6 +292,7 @@ export default class DCEvents {
         this.set_loading(true)
     }
 
+    // ww 相关
     set_loading(flag) {
         let skrr = this.get('.').filter(x => x.settings.$props)
         for (var s of skrr) {
@@ -295,6 +300,7 @@ export default class DCEvents {
         }
     }
 
+    // ww 相关
     send_meta_2_ww() {
         let tf = this.tv.$refs.chart.interval_ms ||
                  this.data.chart.tf
@@ -313,6 +319,7 @@ export default class DCEvents {
         }
     }
 
+    // 网格鼠标点击触发
     grid_mousedown(args) {
         // TODO: tool state finished?
         this.object_selected([])
@@ -341,14 +348,15 @@ export default class DCEvents {
         }
     }
 
+    // 画线完成，失去焦点时触发
     drawing_mode_off() {
         this.tv.$set(this.data, 'drawingMode', false)
         this.tv.$set(this.data, 'tool', 'Cursor')
     }
 
     // Place a new tool
+    // 似乎放置一个画图工具就触发
     build_tool(grid_id, type) {
-
         let list = this.data.tools
         type = type || this.data.tool
         let proto = list.find(x => x.type === type)
@@ -373,10 +381,12 @@ export default class DCEvents {
         sett.$uuid = `${id}-${Utils.now()}`
 
         this.tv.$set(this.data, 'selected', sett.$uuid)
+        // 添加垃圾桶图标（用于清空当前的线）
         this.add_trash_icon()
     }
 
     // Remove selected / Remove all, etc
+    // 删除选中/全部删除等
     system_tool(type) {
         switch (type) {
             case 'Remove':
@@ -391,6 +401,7 @@ export default class DCEvents {
     }
 
     // Apply new overlay settings
+    //应用新的覆盖设置
     change_settings(args) {
         let settings = args[0]
         delete settings.id
@@ -399,14 +410,17 @@ export default class DCEvents {
     }
 
     // Lock the scrolling mechanism
+    // 锁定滚动机制
     on_scroll_lock(flag) {
         this.tv.$set(this.data, 'scrollLock', flag)
     }
 
     // When new object is selected / unselected
+    // 当新对象被选中/取消选中时
     object_selected(args) {
         var q = this.data.selected
         if (q) {
+            // 检查当前绘制是否完成
             // Check if current drawing is finished
             //let res = this.get_one(`${q}.settings`)
             //if (res && res.$state !== 'finished') return
@@ -423,10 +437,11 @@ export default class DCEvents {
         this.merge(`${args[2]}.settings`, {
             $selected: true
         })
-
+        // 添加垃圾桶图标（用于清空当前的线）
         this.add_trash_icon()
     }
 
+    // 添加垃圾桶图标（用于清空当前的线）
     add_trash_icon() {
         const type = 'System:Remove'
         if (this.data.tools.find(x => x.type === type)) {
@@ -437,8 +452,10 @@ export default class DCEvents {
         })
     }
 
+    // 移除垃圾桶图标
     remove_trash_icon() {
         // TODO: Does not call Toolbar render (distr version)
+        // 不调用工具栏渲染（发行版）
         const type = 'System:Remove'
         Utils.overwrite(this.data.tools,
             this.data.tools.filter(x => x.type !== type)
@@ -446,6 +463,8 @@ export default class DCEvents {
     }
 
     // Set overlay data from the web-worker
+    // ww 相关，从 ww 设置覆盖数据
+    // 不知道干嘛用的
     on_overlay_data(data) {
         this.get('.').forEach(x => {
             if (x.settings.$synth) this.del(`${x.id}`)
@@ -472,6 +491,7 @@ export default class DCEvents {
     }
 
     // Push overlay updates from the web-worker
+    // 从 web-worker 推送覆盖更新, ww 相关
     on_overlay_update(data) {
         for (var ov of data) {
             if (!ov.data) continue
@@ -483,6 +503,8 @@ export default class DCEvents {
     }
 
     // Clean-up unfinished business (tools)
+    // 清理未竟事业（工具）
+    // TODO: 不知道干嘛用的
     before_destroy() {
         let f = x => !x.settings.$state ||
             x.settings.$state === 'finished'
@@ -497,11 +519,10 @@ export default class DCEvents {
     }
 
     // Get overlay by grid-layer id
+    // 通过网格层 id 获取叠加层
     get_overlay(obj) {
         let id = obj.id || `g${obj.grid_id}_${obj.layer_id}`
         let dcid = obj.uuid || this.gldc[id]
         return this.get_one(`${dcid}`)
     }
-
-
 }
