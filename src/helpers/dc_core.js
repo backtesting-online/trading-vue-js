@@ -1,5 +1,6 @@
 
 // DataCube "private" methods
+// DataCube "私有" 方法
 
 import Utils from '../stuff/utils.js'
 import DCEvents from './dc_events.js'
@@ -8,7 +9,9 @@ import Dataset from './dataset.js'
 export default class DCCore extends DCEvents {
 
     // Set TV instance (once). Called by TradingVue itself
+    // 设置 tv 实例（一次）, 由 TradingVue 本身调用
     init_tvjs($root) {
+        // $root 是根组件实例
         if (!this.tv) {
             this.tv = $root
             this.init_data()
