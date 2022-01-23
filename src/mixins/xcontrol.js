@@ -30,6 +30,7 @@ export default {
             return this.controllers
         },
         // TODO: preventDefault
+        // 在通知 datacube 事件之前触发
         pre_dc(e) {
             for (var ctrl of this.controllers) {
                 if (ctrl.update) {
@@ -37,6 +38,7 @@ export default {
                 }
             }
         },
+        // 在通知 datacube 事件之后触发
         post_dc(e) {
             for (var ctrl of this.controllers) {
                 if (ctrl.post_update) {
