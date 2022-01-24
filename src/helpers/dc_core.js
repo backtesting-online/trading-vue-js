@@ -19,8 +19,12 @@ export default class DCCore extends DCEvents {
 
             // Listen to all setting changes
             // TODO: works only with merge()
-            this.tv.$watch(() => this.get_by_query('.settings'),
-                (n, p) => this.on_settings(n, p))
+            // 监听所有设置变化
+            // TODO: 仅适用于 merge()
+            this.tv.$watch(
+                () => this.get_by_query('.settings'),
+                (newVal, oldVal) => this.on_settings(newVal, oldVal)
+            )
 
             // Listen to all indices changes
             this.tv.$watch(() => this.get('.')
@@ -35,29 +39,31 @@ export default class DCCore extends DCEvents {
 
     // Init Data Structure v1.1
     init_data($root) {
-
+        //设置 data 中的 chart 属性
         if (!('chart' in this.data)) {
             this.tv.$set(this.data, 'chart', {
                 type: 'Candles',
                 data: this.data.ohlcv || []
             })
         }
-
+        // 如果没有 onchart 则置空
         if (!('onchart' in this.data)) {
             this.tv.$set(this.data, 'onchart', [])
         }
-
+        // 如果没有 offchart 则置空
         if (!('offchart' in this.data)) {
             this.tv.$set(this.data, 'offchart', [])
         }
 
+        // 如果没有 settings 则置空
         if (!this.data.chart.settings) {
             this.tv.$set(this.data.chart,'settings', {})
         }
 
-        // Remove ohlcv cuz we have Data v1.1^
+        // 删除 ohlcv 因为我们有 Data v1.1^
         delete this.data.ohlcv
 
+        // 如果没有 datasets 则置空
         if (!('datasets' in this.data)) {
             this.tv.$set(this.data, 'datasets', [])
         }
@@ -119,46 +125,88 @@ export default class DCCore extends DCEvents {
     }
 
     // Update ids for all overlays
+    // 更新所有叠加层的 id
     update_ids() {
+        // 主图的 id
         this.data.chart.id = `chart.${this.data.chart.type}`
-        var count = {}
+
+        let count = {}
         // grid_id,layer_id => DC id mapping
-        this.gldc = {}, this.dcgl = {}
-        for (var ov of this.data.onchart) {
+        this.gldc = {}
+        this.dcgl = {}
+
+        // 先遍历主图上的  overlays
+        for (let ov of this.data.onchart) {
             if (count[ov.type] === undefined) {
                 count[ov.type] = 0
             }
             let i = count[ov.type]++
+
+            // id 以 `onchart.${ov.type}.${index}` 来命名
+            // index 用于相同的 type 时的递增
             ov.id = `onchart.${ov.type}${i}`
-            if (!ov.name) ov.name = ov.type + ` ${i}`
-            if (!ov.settings) this.tv.$set(ov, 'settings', {})
+
+            // 如果没有 name, 则自动补充一个 (type + index)
+            if (!ov.name) {
+                ov.name = ov.type + ` ${i}`
+            }
+            // 如果没有 settings 属性，补充一个空值
+            if (!ov.settings) {
+                this.tv.$set(ov, 'settings', {})
+            }
 
             // grid_id,layer_id => DC id mapping
+            // 保存下映射关系 (grid_id <=> layer_id)
             this.gldc[`g0_${ov.type}_${i}`] = ov.id
             this.dcgl[ov.id] = `g0_${ov.type}_${i}`
         }
+
         count = {}
         let grids = [{}]
         let gid = 0
-        for (var ov of this.data.offchart) {
+
+        // 再遍历副图的图表
+        for (let ov of this.data.offchart) {
             if (count[ov.type] === undefined) {
                 count[ov.type] = 0
             }
+
+            // id 以 `offchart.${ov.type}.${index}` 来命名
+            // index 用于相同的 type 时的递增
             let i = count[ov.type]++
             ov.id = `offchart.${ov.type}${i}`
-            if (!ov.name) ov.name = ov.type + ` ${i}`
-            if (!ov.settings) this.tv.$set(ov, 'settings', {})
+
+            if (!ov.name) {
+                ov.name = ov.type + ` ${i}`
+            }
+            if (!ov.settings) {
+                this.tv.$set(ov, 'settings', {})
+            }
 
             // grid_id,layer_id => DC id mapping
+            // 每个副图的 ID 都会自增
             gid++
-            let rgid = (ov.grid || {}).id || gid // real grid_id
+
+            // 真正的 grid id
+            const rgid = (ov.grid || {}).id || gid
+
             // When we merge grid, skip ++
-            if ((ov.grid || {}).id) gid--
-            if (!grids[rgid]) grids[rgid] = {}
+            // 当我们合并网格时，跳过 ++
+            // TODO: 这里为什么 offchart 上会有 grid.id 
+            if ((ov.grid || {}).id) {
+                gid--
+            }
+
+            // 这里也是做个映射关系，不过是个二维的，第一层是 grid id , 第二层是 type + index
+            // 之所以主图是个一维数组是因为主图只有一个，grid id就是0
+            if (!grids[rgid]) {
+                grids[rgid] = {}
+            }
             if (grids[rgid][ov.type] === undefined) {
                 grids[rgid][ov.type] = 0
             }
             let ri = grids[rgid][ov.type]++
+
             this.gldc[`g${rgid}_${ov.type}_${ri}`] = ov.id
             this.dcgl[ov.id] = `g${rgid}_${ov.type}_${ri}`
         }
@@ -246,9 +294,15 @@ export default class DCCore extends DCEvents {
     // Returns array of objects matching query.
     // Object contains { parent, index, value }
     // TODO: query caching
+    // 返回匹配查询的对象数组。
+    // 对象包含 { parent, index, value }
+    // TODO: 查询缓存
     get_by_query(query, chuck) {
-
+        // eg: query = ".settings"
         let tuple = query.split('.')
+
+        // zale TODO:
+        // console.log(`query: ${query}, chuck: ${chuck}`)
 
         switch (tuple[0]) {
             case 'chart':
@@ -266,7 +320,7 @@ export default class DCCore extends DCEvents {
                     }
                 }
                 break
-            default:
+            default: {
                 /* Should get('.') return also the chart? */
                 /*let ch = this.chart_as_query([
                     'chart',
@@ -284,6 +338,7 @@ export default class DCCore extends DCEvents {
                 ])
                 result = [/*ch[0],*/ ...on, ...off]
                 break
+            }
         }
         return result.filter(
             x => !(x.v || {}).locked || chuck)
@@ -304,18 +359,24 @@ export default class DCCore extends DCEvents {
     }
 
     query_search(query, tuple) {
-
+        // eg: query = ".settings"
+        // eg: side = "onchart" / "offchart", path = '' , field = 'settings'
         let side = tuple[0]
         let path = tuple[1] || ''
         let field = tuple[2]
 
-        let arr = this.data[side].filter(x => (
-            x.id === query ||
-            (x.id && x.id.includes(path)) ||
-            x.name === query ||
-            (x.name && x.name.includes(path)) ||
-            query.includes((x.settings || {}).$uuid)
-        ))
+        let arr = this.data[side].filter(x => {
+            return (
+                x.id === query ||
+                (x.id && x.id.includes(path)) ||
+                x.name === query ||
+                (x.name && x.name.includes(path)) ||
+                query.includes((x.settings || {}).$uuid)
+            )
+        })
+
+        // zale TODO:
+        // console.log("arr", arr);
 
         if (field) {
             return arr.map(x => ({
