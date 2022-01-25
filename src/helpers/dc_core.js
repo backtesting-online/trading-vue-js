@@ -27,11 +27,13 @@ export default class DCCore extends DCEvents {
             )
 
             // Listen to all indices changes
+            // 和 ww 相关，先忽略
             this.tv.$watch(() => this.get('.')
                 .map(x => x.settings.$uuid),
                 (n, p) => this.on_ids_changed(n, p))
 
             // Watch for all 'datasets' changes
+            // 观察所有“数据集”的变化
             this.tv.$watch(() => this.get('datasets'),
                 Dataset.watcher.bind(this))
         }
@@ -69,6 +71,7 @@ export default class DCCore extends DCEvents {
         }
 
         // Init dataset proxies
+        // 初始化数据集代理
         for (var ds of this.data.datasets) {
             if (!this.dss) this.dss = {}
             this.dss[ds.id] = new Dataset(this, ds)
@@ -78,39 +81,48 @@ export default class DCCore extends DCEvents {
 
     // Range change callback (called by TradingVue)
     // TODO: improve (reliablity + chunk with limited size)
+    // 范围改变回调（由 TradingVue 调用）
+    // TODO: 改进（可靠性 + 大小有限的块）
     async range_changed(range, tf, check=false) {
-
         if (!this.loader) return
         if (!this.loading) {
             let first = this.data.chart.data[0][0]
             if (range[0] < first) {
                 this.loading = true
-                await Utils.pause(250) // Load bigger chunks
-                range = range.slice()  // copy
+                // 加载更大的块
+                await Utils.pause(250)
+                // 复制下
+                range = range.slice()
                 range[0] = Math.floor(range[0])
                 range[1] = Math.floor(first)
                 let prom = this.loader(range, tf, d => {
-                    // Callback way
+                    // 回调方式
                     this.chunk_loaded(d)
                 })
                 if (prom && prom.then) {
-                    // Promise way
+                    // Promise 方式
                     this.chunk_loaded(await prom)
                 }
             }
         }
-        if (!check) this.last_chunk = [range, tf]
+
+        if (!check) {
+            this.last_chunk = [range, tf]
+        }
     }
 
     // A new chunk of data is loaded
     // TODO: bulletproof fetch
+    // 一个新的数据块被加载
+    // TODO：防弹提取
     chunk_loaded(data) {
-
         // Updates only candlestick data, or
+        // 仅更新烛台数据，或
         if (Array.isArray(data)) {
             this.merge('chart.data', data)
         } else {
             // Bunch of overlays, including chart.data
+            // 一堆叠加层，包括 chart.data
             for (var k in data) {
                 this.merge(k, data[k])
             }
@@ -213,6 +225,7 @@ export default class DCCore extends DCEvents {
     }
 
     // TODO: chart refine (from the exchange chart)
+    // TODO: 图表细化（来自交易所最新的图表数据）
     update_candle(data) {
         let ohlcv = this.data.chart.data
         let last = ohlcv[ohlcv.length - 1]
@@ -386,7 +399,7 @@ export default class DCCore extends DCEvents {
             }))
         }
 
-        return arr.map((x, i) => ({
+        return arr.map((x) => ({
             p: this.data[side],
             i: this.data[side].indexOf(x),
             v: x
